@@ -51,33 +51,53 @@ button {
 <h1>🎮 DND Gacha</h1>
 
 <button class="roll" onclick="roll()">🎰 Крутить</button>
-<button class="inventory" onclick="showInventory()">🎒 Инвентарь</button>
+<button class="inventory" onclick="loadInventory()">🎒 Инвентарь</button>
 
 <div id="result"></div>
 <div id="inventory"></div>
 
 <script>
-let inventory = [];
+const tg = window.Telegram.WebApp;
+tg.expand();
 
-function roll() {
-    let rand = Math.random();
-    let item;
+// ⚠️ ВАЖНО: тут буде user.id
+const user = tg.initDataUnsafe.user;
 
-    if (rand < 0.6) {
-        item = {name: "Камень", rarity: "common", emoji: "⚪"};
-    } else if (rand < 0.9) {
-        item = {name: "Меч", rarity: "rare", emoji: "🔵"};
-    } else {
-        item = {name: "Корона", rarity: "legendary", emoji: "🟡"};
-    }
+// 🔗 ВСТАВ СЮДИ СВОЙ NGROK ИЛИ СЕРВЕР
+const API_URL = "https://ТВОЙ-НГРОК.ngrok.io";
 
-    inventory.push(item);
+// 🎰 ГАЧА
+async function roll() {
+    let res = await fetch(API_URL + "/roll", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            user_id: user.id
+        })
+    });
+
+    let item = await res.json();
 
     document.getElementById("result").innerHTML =
-        `<div class="card">🎰 Выпало:<br>${item.emoji} ${item.name}</div>`;
+        `<div class="card">🎰 Выпало:<br>${item.name} (${item.rarity})</div>`;
 }
 
-function showInventory() {
+// 🎒 ІНВЕНТАР
+async function loadInventory() {
+    let res = await fetch(API_URL + "/inventory", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            user_id: user.id
+        })
+    });
+
+    let inventory = await res.json();
+
     if (inventory.length === 0) {
         document.getElementById("inventory").innerHTML = "Пусто";
         return;
@@ -86,14 +106,18 @@ function showInventory() {
     let counted = {};
 
     inventory.forEach(item => {
-        let key = item.name;
+        let key = item.name + "_" + item.rarity;
         counted[key] = counted[key] ? counted[key] + 1 : 1;
     });
 
     let html = "";
 
-    for (let name in counted) {
-        html += `<div class="card">${name} x${counted[name]}</div>`;
+    for (let key in counted) {
+        let parts = key.split("_");
+        let name = parts[0];
+        let rarity = parts[1];
+
+        html += `<div class="card">${name} (${rarity}) x${counted[key]}</div>`;
     }
 
     document.getElementById("inventory").innerHTML = html;
