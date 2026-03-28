@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>DND Gacha</title>
+
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+
+<style>
+body {
+    background: #1e1e1e;
+    color: white;
+    font-family: sans-serif;
+    text-align: center;
+}
+
+h1 {
+    margin-top: 20px;
+}
+
+button {
+    padding: 12px 20px;
+    font-size: 18px;
+    margin: 10px;
+    border-radius: 10px;
+    border: none;
+    cursor: pointer;
+}
+
+.roll {
+    background: #4caf50;
+    color: white;
+}
+
+.inventory {
+    background: #2196f3;
+    color: white;
+}
+
+.card {
+    background: #2a2a2a;
+    margin: 10px;
+    padding: 10px;
+    border-radius: 10px;
+}
+</style>
+</head>
+
+<body>
+
+<h1>🎮 DND Gacha</h1>
+
+<button class="roll" onclick="roll()">🎰 Крутить</button>
+<button class="inventory" onclick="showInventory()">🎒 Инвентарь</button>
+
+<div id="result"></div>
+<div id="inventory"></div>
+
+<script>
+let inventory = [];
+
+function roll() {
+    let rand = Math.random();
+    let item;
+
+    if (rand < 0.6) {
+        item = {name: "Камень", rarity: "common", emoji: "⚪"};
+    } else if (rand < 0.9) {
+        item = {name: "Меч", rarity: "rare", emoji: "🔵"};
+    } else {
+        item = {name: "Корона", rarity: "legendary", emoji: "🟡"};
+    }
+
+    inventory.push(item);
+
+    document.getElementById("result").innerHTML =
+        `<div class="card">🎰 Выпало:<br>${item.emoji} ${item.name}</div>`;
+}
+
+function showInventory() {
+    if (inventory.length === 0) {
+        document.getElementById("inventory").innerHTML = "Пусто";
+        return;
+    }
+
+    let counted = {};
+
+    inventory.forEach(item => {
+        let key = item.name;
+        counted[key] = counted[key] ? counted[key] + 1 : 1;
+    });
+
+    let html = "";
+
+    for (let name in counted) {
+        html += `<div class="card">${name} x${counted[name]}</div>`;
+    }
+
+    document.getElementById("inventory").innerHTML = html;
+}
+</script>
+
+</body>
+</html>
